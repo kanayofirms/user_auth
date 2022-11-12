@@ -3,7 +3,7 @@ const router = express.Router()
 
 //controllers
 
-const { Usercontroller }  = require('../controllers/user')
+const { Usercontroller, Logincontroller }  = require('../controllers/user')
 
 //route to pages
 /*
@@ -22,7 +22,9 @@ router
 
 //Users Login route
 router
-.post('/login-user', async(req, res, next) => {})
+.post('/login-user', async(req, res, next) => {
+    await Logincontroller(req.body, 'user', res)
+})
 
 //Get Profile route
 router

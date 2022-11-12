@@ -1,5 +1,8 @@
 const bcrypt = require('bcryptjs')
+const jwt = require('jsonwebtoken')
 const User = require('../models/User')
+const { SECRET } = require('../config')
+
 
 //const { getAll } = require('./admin')
 
@@ -54,12 +57,68 @@ const Usercontroller = async(userPayload, role, res) => {
             mssg: `Unable to create your account. Please try again.`,
             success: false 
     })
-         
     }
- 
+ };
 
+ const Logincontroller = async (userCreds, role, res) => {
+    let { username, password } = userCreds
 
-}
+    //Check if username is stored in the database
+
+    const user = await User.findOne({ username: username })
+    if (!user) {
+        return res
+                .status(404)
+                .json({
+                    mssg: "Username is not found. Invalid login credentials.",
+                    success: false 
+                })
+
+    }
+    //Check for the role
+    if (user.role != role) {
+        return res
+                .status(403)
+                .json({
+                    mssg: "Please make sure you are logging in from the correct portal.",
+                    success: false 
+                })
+    }
+    //That means user is existing and trying to signin from the correct portal
+    //Now check for the password
+    let isMatch = await bcrypt.compare(password, user.password)
+    if(isMatch) {
+        //Sign in the token and issue it to the user
+        let token = jwt.sign({
+            user_id: user._id,
+            role: user.role,
+            username : user.username,
+            email: user.email
+        }, SECRET, { expiresIn: '14 days'})
+        let result = {
+            username: user.username,
+            role: user.role,
+            email: user.email,
+            token: `Bearer ${token}`,
+            expiresIn: 280
+        }
+        return res
+                .status(200)
+                .json({
+                    ...result,
+                    mssg: "Congratulations! You are now logged in.",
+                    success: true 
+                })
+
+    } else {
+        return res
+                .status(403)
+                .json({
+                    mssg: "Incorrect password",
+                    success: false 
+                })
+    }
+ }
 
 const validateUsername = async username => {
     let user = await User.findOne({username: username})
@@ -82,53 +141,9 @@ const validateEmail = async email => {
 
 
 
-/*const Usercontroller =  {
-    getAll: async(req, res, next) => {
-        try{
-            res.status(200)
-        .json({success: true, mssg: "Controllers set!!!"})
-        }catch(error){
-            res.status(404)
-               .json({error: error.message})
-        }
-    },
-    getById: async(req, res, next) => {
-        const{ id } = req.params
-        try{
-            res
-                .status(200)
-                .json({success: true, mssg: `We are progressing, ${id}`})
-            }catch(error){
-                res.status(404)
-                    .json({error: error.message})
-            }
-    },
-    createUser: async(req, res, next) => {
-        const{id, fullName} = req.body
-        const userPayload = {
-            id, 
-            fullName
-        }
-        try{
-            res
-               .status(200)
-               .json(
-                {success: true, 
-                mssg: `We are progressing ${ id }`, 
-                data: userPayload}
-                )
-               }
-        catch(error){
-            res.status(404)
-                .json({error: error.message})
-        }
-    }
-}
-*/
-
-
 
 module.exports = {
-    Usercontroller
+    Usercontroller,
+    Logincontroller
     
  }

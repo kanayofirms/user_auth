@@ -1,36 +1,37 @@
 const express = require('express')
 const router = express.Router()
 
-const { adminController } = require('../controllers/admin')
+//controllers
+
+const { Usercontroller, Logincontroller }  = require('../controllers/user')
 
 //route to pages
+/*
+router
+.get('/', Usercontroller.getAll)
+.get('/:id',Usercontroller.getById)
+.post('/', Usercontroller.createUser)
+.put('/', Usercontroller.createUser)
+.delete('/:id', Usercontroller.createUser)*/ 
 
-/*router
-.get('/', AdminController.getAll)
-.get('/:id', AdminController.getById)
-.post('/', AdminController.createUser)
-.put('/:id', AdminController.createUser)
-.delete('/:id', AdminController.createUser)*/
-
-
-//Admins Registration route
+//Users Registration route
 router
 .post('/register-admin', async(req, res, next) => {
-    await adminController(req.body, 'admin', res)
+    await Usercontroller(req.body, 'admin', res)
 })
 
-//Admins Login route
+//Users Login route
 router
-.post('/login-admin', async(req, res, next) => {})
+.post('/login-admin', async(req, res, next) => {
+    await Logincontroller(req.body, 'admin', res)
+})
 
 //Get Profile route
 router
 .get('/profile', async(req, res, next) => {})
 //Users Protected route
 router
-.post('/admin-protected', async(req, res, next) => {})
-
-
+.post('/user-protected', async(req, res, next) => {})
 
 
 
