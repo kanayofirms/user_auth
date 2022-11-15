@@ -1,26 +1,24 @@
 const express = require('express')
 const router = express.Router()
 
-//controllers
+//Usercontroller functions
 
-const { Usercontroller, Logincontroller }  = require('../controllers/user')
+const { 
+    adminController, 
+    Logincontroller, 
+    Authcontroller, 
+    listUser,
+    CheckRole }  = require('../controllers/admin')
 
-//route to pages
-/*
-router
-.get('/', Usercontroller.getAll)
-.get('/:id',Usercontroller.getById)
-.post('/', Usercontroller.createUser)
-.put('/', Usercontroller.createUser)
-.delete('/:id', Usercontroller.createUser)*/ 
 
-//Users Registration route
+
+//Authors Registration route
 router
 .post('/register-admin', async(req, res, next) => {
-    await Usercontroller(req.body, 'admin', res)
+    await adminController(req.body, 'admin', res)
 })
 
-//Users Login route
+//Authors Login route
 router
 .post('/login-admin', async(req, res, next) => {
     await Logincontroller(req.body, 'admin', res)
@@ -28,10 +26,15 @@ router
 
 //Get Profile route
 router
-.get('/profile', async(req, res, next) => {})
-//Users Protected route
+.get('/profile', Authcontroller, async(req, res, next) => {
+    return res.json(listUser(req.user)) 
+})
+//Authors Protected route
 router
-.post('/user-protected', async(req, res, next) => {})
+.get('/admin-protected', Authcontroller, CheckRole(['admin']), async(req, res, next) => {
+    return res
+            .json('Hello Admin, Welcome to the conversational app.')
+})
 
 
 

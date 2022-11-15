@@ -1,9 +1,9 @@
 require('dotenv').config()
 const express = require('express')
-const bodyParser = require('body-parser')
 const adminRouter = require('./routes/admin')
 const userRouter = require('./routes/user')
 const authorRouter = require('./routes/author')
+const passport = require('passport')
 const { connect } = require('mongoose')
 const { success, error } = require('consola')
 
@@ -14,24 +14,23 @@ const { DB, PORT } = require('./config')
 const app = express()
 
 
-
-
-//middlewares
-app.use(bodyParser.json())
+//Middlewares
+app.use(passport.initialize())
 app.use(express.json())
-//bodyParser middleware
-app.use(bodyParser.urlencoded({extended: false}))
 app.use(express.urlencoded({
     extended: true
 }))
+
+require('./middlewares/passport')(passport)
 
 
 
 
 //routes
 app.use('/api/user', userRouter)
-app.use('/api/admin', adminRouter)
 app.use('/api/author', authorRouter)
+app.use('/api/admin', adminRouter)
+
 
 //db
 const runApp = async() => {
@@ -42,7 +41,7 @@ const runApp = async() => {
         })
 
         success({
-            mssg: `Successfully connected to the Database, \n${ DB }`,
+            mssg: `Successfully connected to the Database,\n ${ DB }`,
             badge: true
         })
 //Listening for the server on port
