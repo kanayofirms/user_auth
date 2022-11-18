@@ -1,17 +1,18 @@
-require('dotenv').config()
-const express = require('express')
-const adminRouter = require('./routes/admin')
-const userRouter = require('./routes/user')
-const authorRouter = require('./routes/author')
-const passport = require('passport')
-const { connect } = require('mongoose')
-const { success, error } = require('consola')
+require("dotenv").config();
+const express = require("express");
+const adminRouter = require("./routes/admin");
+const userRouter = require("./routes/user");
+const authorRouter = require("./routes/author");
+const passport = require("passport");
+const { join } = require("path");
+const { connect } = require("mongoose");
+const { success, error } = require("consola");
 
 //app constants
-const { DB, PORT } = require('./config')
+const { DB, PORT } = require("./config");
 
 //initialize app
-const app = express()
+const app = express();
 
 
 //Middlewares
@@ -20,6 +21,7 @@ app.use(express.json())
 app.use(express.urlencoded({
     extended: true
 }))
+app.use(express.static(join(__dirname, '/uploads')))
 
 require('./middlewares/passport')(passport)
 

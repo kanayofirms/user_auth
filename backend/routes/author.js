@@ -1,41 +1,99 @@
-const express = require('express')
-const router = express.Router()
+const express = require("express");
+const router = express.Router();
+const Profile = require("../models/Profile");
+const uploader = require("../middlewares/uploader");
 
-//Usercontroller functions
+//authorController functions
 
-const { 
-    authorController, 
-    Logincontroller, 
-    Authcontroller, 
+const {
+    authorController,
+    Logincontroller,
+    Authcontroller,
     listUser,
-    CheckRole }  = require('../controllers/author')
+    CheckRole } = require("../controllers/user");
+const { DOMAIN } = require("../config");
 
 
+/**
+ * @description To create a new Author Account
+ * @api /api/author/register
+ * @access Public
+ * @type POST
+ */
 
-//Authors Registration route
+
 router
-.post('/register-author', async(req, res, next) => {
-    await authorController(req.body, 'author', res)
-})
+    .post("/register", async (req, res) => {
+        await authorController(req.body, "author", res)
+    }
+    );
 
-//Authors Login route
+/**
+ * @description To create a new Author Account
+ * @api /api/author/login
+ * @access Public
+ * @type POST
+ */
+
 router
-.post('/login-author', async(req, res, next) => {
-    await Logincontroller(req.body, 'author', res)
-})
+    .post("/login", async (req, res) => {
+        await Logincontroller(req.body, "author", res)
+    }
+    );
 
-//Get Profile route
+/**
+ * @Desc To get the authenticated Author's profile
+ * @api /api/author/authenticate
+ * @access Private
+ * @type GET
+ */
+
 router
-.get('/profile', Authcontroller, async(req, res, next) => {
-    return res.json(listUser(req.user)) 
-})
-//Authors Protected route
+    .get("/authenticate", Authcontroller, CheckRole(["author"]), async (req, res) => {
+        return res
+            .json(listUser(req.user))
+    });
+
+/**
+ * @description To create profile of the authenticated author
+ * @api /api/author/create-profile
+ * @access Private
+ * @type POST <multipart-form> request
+ */
+
 router
-.get('/author-protected', Authcontroller, CheckRole(['author']), async(req, res, next) => {
-    return res
-            .json('Hello Author, Welcome to the conversational app.')
-})
+    .post("/create-profile", Authcontroller, uploader.single("avatar"),
+        async (req, res, next) => {
+            try {
+                let { body, file, user } = req;
+                let path = DOMAIN + file.path.split("uploads")[1];
+                let profile = new Profile(
+                    {
+                        social: body,
+                        account: user._id,
+                        avatar: path,
+                    }
+                );
+                //console.log('AUTHOR_PROFILE', profile)
+                await profile.save();
+                return res
+                    .status(201)
+                    .json({
+                        mssg: "Your profile has been created.",
+                        success: true,
+                    })
+            } catch {
+                //console.log(err)
+                return res
+                    .status(400)
+                    .json({
+                        mssg: "We are not able to create your profile.",
+                        success: false
+                    })
+            }
+        }
+    );
 
 
 
-module.exports = router
+module.exports = router;

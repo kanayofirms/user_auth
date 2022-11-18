@@ -1,41 +1,96 @@
-const express = require('express')
-const router = express.Router()
+const express = require("express");
+const router = express.Router();
+const Profile = require("../models/Profile");
+const uploader = require("../middlewares/uploader");
 
-//Usercontroller functions
+//adminController functions
 
 const { 
-    adminController, 
-    Logincontroller, 
-    Authcontroller, 
-    listUser,
-    CheckRole }  = require('../controllers/admin')
+  adminController, 
+  Logincontroller, 
+  Authcontroller, 
+  listUser,
+  CheckRole,
+ } = require("../controllers/user");
+const { DOMAIN } = require("../config");
 
 
+/**
+ * @description To create a new Admin Account
+ * @api /api/admin/register
+ * @access Public
+ * @type POST
+ */
 
-//Authors Registration route
+
 router
-.post('/register-admin', async(req, res, next) => {
-    await adminController(req.body, 'admin', res)
-})
+.post("/register", async(req, res) => {
+  await adminController(req.body, "author", res)
+});
 
-//Authors Login route
-router
-.post('/login-admin', async(req, res, next) => {
-    await Logincontroller(req.body, 'admin', res)
-})
+/**
+ * @description To create a new Admin Account
+ * @api /api/admin/login
+ * @access Public
+ * @type POST
+ */
 
-//Get Profile route
 router
-.get('/profile', Authcontroller, async(req, res, next) => {
-    return res.json(listUser(req.user)) 
-})
-//Authors Protected route
+.post("/login", async(req, res) => {
+    await Logincontroller(req.body, "admin", res)
+});
+
+/**
+ * @Desc To get the authenticated Admin's profile
+ * @api /api/admin/authenticate
+ * @access Private
+ * @type GET
+ */
+
 router
-.get('/admin-protected', Authcontroller, CheckRole(['admin']), async(req, res, next) => {
+.get("/authenticate", Authcontroller, CheckRole(["admin"]), async(req, res) => {
     return res
-            .json('Hello Admin, Welcome to the conversational app.')
-})
+            .json(listUser(req.user))
+});
+
+/**
+ * @description To create profile of the authenticated admin
+ * @api /api/admin/create-profile
+ * @access Private
+ * @type POST <multipart-form> request
+ */
+
+router
+.post("/create-profile", Authcontroller, uploader.single("avatar"), 
+async(req, res, next) => {
+    try {
+       let { body, file, user } = req;
+       let path = DOMAIN + file.path.split("uploads") [1];
+       let profile = new Profile(
+        {
+          social: body,
+          account: user._id,
+          avatar: path,
+        });
+        //console.log("ADMIN_PROFILE", profile)
+        await profile.save();
+        return res
+            .status(201)
+            .json({
+            mssg: "Your profile has been created.",
+            success: true,
+        });
+    } catch {
+      //console.log(err)
+        return res
+            .status(400)
+            .json({
+            mssg: "We are not able to create your profile.",
+            success: false,
+        });
+    };
+});
 
 
 
-module.exports = router
+module.exports = router;

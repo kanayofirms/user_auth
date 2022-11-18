@@ -1,8 +1,8 @@
-const bcrypt = require('bcryptjs')
-const jwt = require('jsonwebtoken')
-const User = require('../models/User')
-const { SECRET } = require('../config')
-const passport = require('passport')
+const bcrypt = require("bcryptjs")
+const jwt = require("jsonwebtoken")
+const User = require("../models/User")
+const { SECRET } = require("../config")
+const passport = require("passport")
 
 
 /**
@@ -20,7 +20,7 @@ const adminController = async(userPayload, role, res) => {
                         .json(
                                 {
                                     success: false, 
-                                    mssg: 'Username is already taken'
+                                    mssg: "Username is already taken"
                                 })
                 }
 
@@ -32,7 +32,7 @@ const adminController = async(userPayload, role, res) => {
                             .json(
                                     {
                                         success: false,
-                                        mssg: `Email is already registered.`
+                                        mssg: "Email is already registered."
                                     }
                                 )
                             } 
@@ -49,7 +49,7 @@ const adminController = async(userPayload, role, res) => {
             return res
                     .status(201)
                     .json({
-                        mssg: `You've been successfully registered. Please Login.`,
+                        mssg: "You've been successfully registered. Please Login.",
                         success: true
             })
 
@@ -78,7 +78,8 @@ const Logincontroller = async (userCreds, role, res) => {
             return res
                     .status(404)
                     .json({
-                        mssg: "Username is not found. Invalid login credentials.",
+                        mssg: 
+                        "Username is not found. Incorrect login credentials",
                         success: false 
                     })
             }
@@ -101,7 +102,7 @@ const Logincontroller = async (userCreds, role, res) => {
                 role: user.role,
                 username : user.username,
                 email: user.email
-            }, SECRET, { expiresIn: '14 days'})
+            }, SECRET, { expiresIn: "14 days"})
             let result = {
                 username: user.username,
                 role: user.role,
@@ -135,7 +136,7 @@ const validateUsername = async username => {
 /**
  * @DESC Passport middleware 
  */
-const Authcontroller = passport.authenticate('jwt', { session: false })
+const Authcontroller = passport.authenticate("jwt", { session: false })
 
 /** 
  * @DESC Check Role Middleware
